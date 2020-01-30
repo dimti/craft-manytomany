@@ -89,6 +89,16 @@ class ManyToManyService extends Component
                 ];
 
                 Craft::$app->db->createCommand()->insert('{{%relations}}', $columns)->execute();
+
+                $columns = [
+                    'fieldId' => $fieldType->id,
+                    'sourceId' => $targetId,
+                    'sourceSiteId' => null,
+                    'targetId' => $sourceId,
+                    'sortOrder' => 1,
+                ];
+
+                Craft::$app->db->createCommand()->insert('{{%relations}}', $columns)->execute();
             }
         }
 
@@ -104,6 +114,15 @@ class ManyToManyService extends Component
                 ':fieldId' => $fieldId,
                 ':sourceId' => $sourceId,
                 ':targetId' => $targetId,
+            ];
+
+            Craft::$app->db->createCommand()->delete('{{%relations}}', $oldRelationConditions,
+                $oldRelationParams)->execute();
+
+            $oldRelationParams = [
+                ':fieldId' => $fieldType->id,
+                ':sourceId' => $targetId,
+                ':targetId' => $sourceId,
             ];
 
             Craft::$app->db->createCommand()->delete('{{%relations}}', $oldRelationConditions,

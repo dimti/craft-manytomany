@@ -4,20 +4,39 @@ namespace Page8\ManyToMany\fields;
 
 use Craft;
 use craft\base\Field;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use craft\events\FieldElementEvent;
+use craft\fields\BaseRelationField;
 use Page8\ManyToMany\Plugin;
 use craft\base\ElementInterface;
 
 /**
  * @property string $settingsHtml
  */
-class ManyToManyField extends Field
+class ManyToManyField extends BaseRelationField
 {
     /**
      * Section source
      * @var array
      */
     public $source;
+
+    /**
+     * @inheritdoc
+     */
+    protected static function elementType(): string
+    {
+        return Entry::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        return $value;
+    }
 
     /**
      * Associated field type
@@ -175,6 +194,15 @@ class ManyToManyField extends Field
     {
         Plugin::getInstance()->service->saveRelationship($this, $element);
 
-        parent::afterElementSave($element, $isNew);
+        /**
+         * @see Field::afterElementSave
+         */
+        // Trigger an 'afterElementSave' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+                'element' => $element,
+                'isNew' => $isNew,
+            ]));
+        }
     }
 }
